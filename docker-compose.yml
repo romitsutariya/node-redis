@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  webapp:
+    image: romitsutariya/node-redis:1.0
+    ports:
+      - "8080"
+    networks:
+      - back-tier
+    depends_on:
+      - db  
+    environment:
+     - REDIS_SERVER=db  
+  db:
+    image: redis
+    networks:
+      - back-tier
+
+volumes:
+  db-data:
+
+networks:
+  back-tier:
