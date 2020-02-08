@@ -22,14 +22,14 @@ const options = {
 log.SetUserOptions(options);
 // Set response
 function setResponse(username, repos) {
+  log.Info(`${username} has ${repos} Github repos`);
   return `<h2>${username} has ${repos} Github repos</h2>`;
 }
 
 // Make request to Github for data
 async function getRepos(req, res, next) {
   try {
-    console.log('Fetching Data...');
-
+    log.Info('Fetching Data...');
     const { username } = req.params;
 
     const response = await fetch(`https://api.github.com/users/${username}`);
@@ -41,10 +41,11 @@ async function getRepos(req, res, next) {
     // Set data to Redis
     client.setex(username, 3600, repos);
     var reponse=setResponse(username, repos)
-    log.Info(reponse);
+   // log.Info(reponse);
     res.send(reponse);
   } catch (err) {
     console.error(err);
+    log.Error(err, 'getRepos', 'getRepos');
     res.status(500);
   }
 }
