@@ -3,9 +3,10 @@ const fetch = require('node-fetch');
 const redis = require('redis');
 
 const PORT = process.env.PORT || 5000;
-const REDIS_PORT = process.env.PORT || 6379;
+const REDIS_PORT = process.env.REDIS_PORT || 6379;
+const REDIS_SERVER = process.env.REDIS_SERVER || 127.0.0.1;
 
-const client = redis.createClient(REDIS_PORT);
+const client = redis.createClient(REDIS_SERVER,REDIS_PORT);
 
 const app = express();
 
@@ -54,6 +55,6 @@ function cache(req, res, next) {
 
 app.get('/repos/:username', cache, getRepos);
 
-app.listen(5000, () => {
+app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
