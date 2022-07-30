@@ -29,9 +29,8 @@ function setResponse(username, repos) {
 // Make request to Github for data
 async function getRepos(req, res, next) {
   try {
-    log.Info(`Fetching Data...https://api.github.com/users/${username}`);
     const { username } = req.params;
-
+    log.Info(`Fetching Data...https://api.github.com/users/${username}`);
     const response = await fetch(`https://api.github.com/users/${username}`);
 
     const data = await response.json();
