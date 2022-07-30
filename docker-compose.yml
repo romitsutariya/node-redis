@@ -8,7 +8,7 @@ services:
     networks:
       - back-tier
     volumes:
-       - db-data:/usr/src/app/logs  
+       - ./:/usr/src/app/logs  
     depends_on:
       - db  
     environment:
