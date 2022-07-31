@@ -16,3 +16,5 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag romitsutariya/node_redis:$(date +%s)
+    - name: Docker Push
+      run: docker push romitsutariya/node_redis
