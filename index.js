@@ -1,25 +1,35 @@
-const express = require('express');
-const fetch = require('node-fetch');
-const redis = require('redis');
-const log = require('node-file-logger');
+import express from 'express';
+import fetch from 'node-fetch';
+import { createClient } from 'redis';
+import log from 'node-file-logger';
 
 const PORT = process.env.PORT || 5000;
 const REDIS_PORT = process.env.REDIS_PORT || 6379;
 const REDIS_SERVER = process.env.REDIS_SERVER || '127.0.0.1';
 
-const client = redis.createClient(REDIS_PORT,REDIS_SERVER);
+const client = createClient({
+  url: `redis://${REDIS_SERVER}:${REDIS_PORT}`
+});
+
+client.on('error', (err) => {
+  console.error('Redis Client Error', err);
+  log.Error(err, 'RedisClient', 'RedisClient');
+});
+
+await client.connect();
 
 const app = express();
 const options = {
   folderPath: './logs/',
   dateBasedFileNaming: true,
   fileNamePrefix: 'DailyLogs_',
-  fileNameExtension: '.log',    
+  fileNameExtension: '.log',
   dateFormat: 'YYYY_MM_D',
   timeFormat: 'h:mm:ss A',
-}
+};
 
 log.SetUserOptions(options);
+
 // Set response
 function setResponse(username, repos) {
   log.Info(`${username} has ${repos} Github repos`);
@@ -32,40 +42,45 @@ async function getRepos(req, res, next) {
     const { username } = req.params;
     log.Info(`Fetching Data...https://api.github.com/users/${username}`);
     const response = await fetch(`https://api.github.com/users/${username}`);
-
+    if (response.status === 404) {
+      res.status(404).send('User not found');
+      return;
+    }
     const data = await response.json();
-
     const repos = data.public_repos;
-
     // Set data to Redis
-    client.setex(username, 3600, repos);
-    var reponse=setResponse(username, repos)
-   // log.Info(reponse);
-    res.send(reponse);
+    await client.set(username, repos);
+    const responseHtml = setResponse(username, repos);
+    res.send(responseHtml);
   } catch (err) {
     console.error(err);
     log.Error(err, 'getRepos', 'getRepos');
-    res.status(500);
+    res.status(500).send('Server Error');
   }
 }
 
 // Cache middleware
-function cache(req, res, next) {
+async function cache(req, res, next) {
   const { username } = req.params;
 
-  client.get(username, (err, data) => {
-    if (err) throw err;
+  try {
+    const data = await client.get(username);
 
     if (data !== null) {
-      res.send(setResponse(username, data));
+      res.send(setResponse(username, data+" (cached)"));
     } else {
       next();
     }
-  });
+  } catch (err) {
+    console.error(err);
+    log.Error(err, 'cache', 'cache');
+    res.status(500).send('Server Error');
+  }
 }
 
 app.get('/repos/:username', cache, getRepos);
 
 app.listen(PORT, () => {
   log.Info(`App listening on port ${PORT}`);
+  console.log(`App listening on port ${PORT}`);
 });
