@@ -2,10 +2,12 @@ import express from 'express';
 import fetch from 'node-fetch';
 import { createClient } from 'redis';
 import log from 'node-file-logger';
+import os from 'os';
 
 const PORT = process.env.PORT || 5000;
 const REDIS_PORT = process.env.REDIS_PORT || 6379;
 const REDIS_SERVER = process.env.REDIS_SERVER || '127.0.0.1';
+const ADD_HOSTNAME= process.env.ADD_HOSTNAME || false;
 
 const client = createClient({
   url: `redis://${REDIS_SERVER}:${REDIS_PORT}`
@@ -33,7 +35,14 @@ log.SetUserOptions(options);
 // Set response
 function setResponse(username, repos) {
   log.Info(`${username} has ${repos} Github repos`);
-  return `<h2>${username} has ${repos} Github repos</h2>`;
+  let responseHtml = `<h2>${username} has ${repos} Github repos</h2>`;
+  console.log(`Served from: ${ADD_HOSTNAME}`);
+  if (ADD_HOSTNAME) {
+    const hostname = os.hostname();
+    responseHtml += `<p>Served from: ${hostname}</p>`;
+    
+  }
+  return responseHtml;
 }
 
 // Make request to Github for data
