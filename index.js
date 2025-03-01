@@ -4,7 +4,7 @@ import { createClient } from 'redis';
 import log from 'node-file-logger';
 import os from 'os';
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 const REDIS_PORT = process.env.REDIS_PORT || 6379;
 const REDIS_SERVER = process.env.REDIS_SERVER || '127.0.0.1';
 const ADD_HOSTNAME= process.env.ADD_HOSTNAME || false;
