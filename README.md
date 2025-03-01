@@ -40,6 +40,33 @@ REDIS_PORT: The Redis server port (default is 6379).
 Example Commands
 Set environment variables and run the application:
 
-Additional Resources
-Redis Quick Start Guide
-Redis Stack Browser
+docker run -d --name node-redis \
+  -e ADD_HOSTNAME=true \
+  -e PORT=8080 \
+  -e REDIS_SERVER=127.0.0.1 \
+  -e REDIS_PORT=6379 \
+  -p 8080:8080 \
+  romitsutariya/node_redis:master-6704f97
+
+
+To create a Docker network and join both the Redis stack container and your node-redis container to the same network, you can follow these steps:
+
+1.Create a Docker network:
+```sh
+docker network create node-redis-nw
+```
+
+Run Redis
+```sh
+docker run -d --name redis-stack --network node-redis-nw -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+```
+
+```sh
+docker run -d --name node-redis --network node-redis-nw \
+  -e ADD_HOSTNAME=true \
+  -e PORT=8080 \
+  -e REDIS_SERVER=redis-stack \
+  -e REDIS_PORT=6379 \
+  -p 8080:8080 \
+  romitsutariya/node_redis:master-6704f97
+```
