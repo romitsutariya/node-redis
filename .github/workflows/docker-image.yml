@@ -14,8 +14,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       # add step to run npm install
-    - name: Install dependencies
-      run: npm install
     - name: docker login
       uses: mr-smithers-excellent/docker-build-push@v5
       with:
